@@ -9,7 +9,7 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
      ```bash
      docker-compose up --build
      ```
-   - Este comando irá construir as imagens Docker e iniciar os serviços definidos no arquivo `docker-compose.yml`.
+   - Este comando irá construir a imagem e iniciar os serviços definidos no arquivo `docker-compose.yml`.
 
 2. **Acessar a Aplicação**:
    - A aplicação estará disponível em `http://localhost:8000`.
