@@ -5,41 +5,55 @@
 A API utiliza autenticação baseada em token. Para acessar os endpoints protegidos, inclua o token no cabeçalho da requisição:
 
 ```
-Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+Authorization: Token <seu-token>
 ```
 
 ### Endpoints
 
 #### Autenticação
 
-##### Registro de Usuário
+##### Cadastro de Usuário
 - **URL**: `/auth/signup/`
 - **Método**: POST
 - **Corpo da Requisição**:
-  ```json
-  {
-    "username": "string",
-    "email": "string",
-    "password": "string"
-  }
-  ```
-- **Respostas**:
-  - 201: Usuário criado com sucesso
-  - 400: Dados inválidos
+```json
+{
+    "username": "exemplo_usuario",
+    "email": "usuario@exemplo.com",
+    "password": "senha123"
+}
+```
+- **Resposta de Sucesso** (201 Created):
+```json
+{
+    "id": 1,
+    "username": "exemplo_usuario",
+    "email": "usuario@exemplo.com"
+}
+```
 
 ##### Login
 - **URL**: `/auth/login/`
 - **Método**: POST
 - **Corpo da Requisição**:
-  ```json
-  {
-    "email": "string",
-    "password": "string"
-  }
-  ```
-- **Respostas**:
-  - 200: Login bem-sucedido (retorna token)
-  - 400: Credenciais inválidas
+```json
+{
+    "email": "usuario@exemplo.com",
+    "password": "senha123"
+}
+```
+- **Resposta de Sucesso** (200 OK):
+```json
+{
+    "token": "seu-token-aqui"
+}
+```
+- **Resposta de Erro** (400 Bad Request):
+```json
+{
+    "error": "Invalid credentials"
+}
+```
 
 #### Carros
 
@@ -47,96 +61,100 @@ Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 - **URL**: `/api/car/`
 - **Método**: GET
 - **Autenticação**: Requerida
-- **Respostas**:
-  - 200: Lista de carros
+- **Resposta de Sucesso** (200 OK):
+```json
+[
+    {
+        "id": 1,
+        "Name": "Nome do Carro",
+        "Status": 1,
+        "Photo": 1
+    }
+]
+```
 
 ##### Criar Carro
 - **URL**: `/api/car/`
 - **Método**: POST
 - **Autenticação**: Requerida
 - **Corpo da Requisição**:
-  ```json
-  {
-    "model": "string",
-    "brand": "string",
-    "status": 1
-  }
-  ```
-- **Respostas**:
-  - 201: Carro criado com sucesso
-  - 400: Dados inválidos
+```json
+{
+    "Name": "Nome do Carro",
+    "Status": 1,
+    "Photo": 1
+}
+```
+- **Resposta de Sucesso** (201 Created):
+```json
+{
+    "id": 1,
+    "Name": "Nome do Carro",
+    "Status": 1,
+    "Photo": 1
+}
+```
 
 ##### Detalhes do Carro
 - **URL**: `/api/car/{id}/`
 - **Método**: GET
 - **Autenticação**: Requerida
-- **Respostas**:
-  - 200: Detalhes do carro
-  - 404: Carro não encontrado
+- **Resposta de Sucesso** (200 OK):
+```json
+{
+    "id": 1,
+    "Name": "Nome do Carro",
+    "Status": 1,
+    "Photo": 1
+}
+```
 
 ##### Atualizar Carro
 - **URL**: `/api/car/{id}/`
 - **Método**: PUT
 - **Autenticação**: Requerida
 - **Corpo da Requisição**: Mesmo formato da criação
-- **Respostas**:
-  - 200: Carro atualizado com sucesso
-  - 400: Dados inválidos
-  - 404: Carro não encontrado
+- **Resposta de Sucesso** (200 OK): Mesmo formato do detalhe
 
 ##### Excluir Carro
 - **URL**: `/api/car/{id}/`
 - **Método**: DELETE
 - **Autenticação**: Requerida
-- **Respostas**:
-  - 204: Carro excluído com sucesso
-  - 404: Carro não encontrado
+- **Resposta de Sucesso** (204 No Content)
 
 #### Fotos
 
-##### Listar Fotos
-- **URL**: `/api/photo/`
-- **Método**: GET
-- **Autenticação**: Requerida
-- **Respostas**:
-  - 200: Lista de fotos
-
-##### Enviar Foto
+##### Upload de Foto
 - **URL**: `/api/photo/`
 - **Método**: POST
 - **Autenticação**: Requerida
-- **Corpo da Requisição** (multipart/form-data):
-  ```json
-  {
-    "car": "integer",
-    "image": "arquivo",
-    "description": "string"
-  }
-  ```
-- **Respostas**:
-  - 201: Foto enviada com sucesso
-  - 400: Dados inválidos
+- **Corpo da Requisição**:
+```json
+{
+    "Base64": "string_base64_da_imagem"
+}
+```
+- **Resposta de Sucesso** (201 Created):
+```json
+{
+    "id": 1,
+    "Base64": "string_base64_da_imagem"
+}
+```
 
-##### Detalhes da Foto
-- **URL**: `/api/photo/{id}/`
-- **Método**: GET
-- **Autenticação**: Requerida
-- **Respostas**:
-  - 200: Detalhes da foto
-  - 404: Foto não encontrada
+### Códigos de Status do Carro
 
-### Enums
+- `DISPONIVEL`: 1
+- `INDISPONIVEL`: 0
 
-#### Status do Carro
-- `0`: INDISPONÍVEL
-- `1`: DISPONÍVEL
+### Notas Importantes
 
-## Desenvolvimento
-
-Este projeto utiliza:
-- Django 4.2.13
-- Django REST Framework 3.14.0
-- Banco de dados PostgreSQL
-- Autenticação baseada em Token
-
-Para debugar, utilize a configuração de debug fornecida em `.vscode/launch.json`.
+1. Todos os endpoints protegidos requerem o token de autenticação no cabeçalho
+2. As fotos são enviadas em formato Base64
+3. As respostas incluem códigos HTTP padrão:
+   - 200: Sucesso
+   - 201: Criado com sucesso
+   - 204: Excluído com sucesso
+   - 400: Erro na requisição
+   - 401: Não autorizado
+   - 404: Não encontrado
