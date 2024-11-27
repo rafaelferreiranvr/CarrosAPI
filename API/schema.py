@@ -19,7 +19,6 @@ class PhotoType(DjangoObjectType):
         model = Photo
         fields = ('id', 'Base64')
 
-# Queries
 class Query(graphene.ObjectType):
     cars = graphene.List(CarType)
     car = graphene.Field(CarType, id=graphene.ID(required=True))
@@ -42,7 +41,6 @@ class Query(graphene.ObjectType):
     def resolve_photo(self, info, id):
         return Photo.objects.get(pk=id)
 
-# Mutations
 class CreateCar(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
