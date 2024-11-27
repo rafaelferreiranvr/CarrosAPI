@@ -67,14 +67,12 @@ Authorization: Token <seu-token>
     {
         "id": 1,
         "Name": "Nome do Carro",
-        "Status": 1,
-        "Photo": 1
+        "Status": 1
     },
     {
-        "id": 1,
-        "Name": "Nome do Carro",
-        "Status": 1,
-        "Photo": 1
+        "id": 2,
+        "Name": "Outro Carro",
+        "Status": 0
     }
 ]
 ```
@@ -87,8 +85,7 @@ Authorization: Token <seu-token>
 ```json
 {
     "Name": "Nome do Carro",
-    "Status": 1,
-    "Photo": 1
+    "Status": 1
 }
 ```
 - **Resposta de Sucesso** (201 Created):
@@ -96,8 +93,7 @@ Authorization: Token <seu-token>
 {
     "id": 1,
     "Name": "Nome do Carro",
-    "Status": 1,
-    "Photo": 1
+    "Status": 1
 }
 ```
 
@@ -110,8 +106,7 @@ Authorization: Token <seu-token>
 {
     "id": 1,
     "Name": "Nome do Carro",
-    "Status": 1,
-    "Photo": 1
+    "Status": 1
 }
 ```
 
@@ -190,8 +185,8 @@ A API GraphQL está disponível no endpoint `/graphql/` e oferece as seguintes f
 
 #### Mutations
 
-- `createCar(name: String!, status: Int!, photoId: ID!)`: Cria um novo carro.
-- `updateCar(id: ID!, name: String, status: Int, photoId: ID)`: Atualiza um carro existente.
+- `createCar(name: String!, status: Int!)`: Cria um novo carro.
+- `updateCar(id: ID!, name: String, status: Int)`: Atualiza um carro existente.
 - `deleteCar(id: ID!)`: Remove um carro.
 - `createPhoto(base64: String!)`: Faz upload de uma nova foto.
 - `createUser(username: String!, email: String!, password: String!)`: Registra um novo usuário.
@@ -240,10 +235,6 @@ query {
     Name
     Status
     statusDisplay
-    Photo {
-      id
-      Base64
-    }
   }
 }
 
@@ -254,10 +245,6 @@ query {
     Name
     Status
     statusDisplay
-    Photo {
-      id
-      Base64
-    }
   }
 }
 
@@ -303,16 +290,12 @@ mutation {
 
 # Criar carro
 mutation {
-  createCar(name: "Novo Carro", status: 1, photoId: "1") {
+  createCar(name: "Novo Carro", status: 1) {
     car {
       id
       Name
       Status
       statusDisplay
-      Photo {
-        id
-        Base64
-      }
     }
   }
 }
