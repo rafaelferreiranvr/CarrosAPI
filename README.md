@@ -5,7 +5,7 @@
 A API utiliza autenticação baseada em token. Para acessar os endpoints protegidos, inclua o token no cabeçalho da requisição:
 
 ```
-Authorization: Token seu-token-aqui
+Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
 ```
 
 ### Endpoints
