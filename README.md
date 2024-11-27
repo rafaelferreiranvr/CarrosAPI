@@ -1,5 +1,25 @@
 ## Documentação da API
 
+### Docker
+
+Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passos abaixo:
+
+1. **Construir e Iniciar os Containers**:
+   - No diretório raiz do projeto, execute o seguinte comando para construir e iniciar os containers:
+     ```bash
+     docker-compose up --build
+     ```
+   - Este comando irá construir as imagens Docker e iniciar os serviços definidos no arquivo `docker-compose.yml`.
+
+2. **Acessar a Aplicação**:
+   - A aplicação estará disponível em `http://localhost:8000`.
+
+3. **Parar os Containers**:
+   - Para parar os containers em execução, utilize o comando:
+     ```bash
+     docker-compose down
+     ```
+
 ### Autenticação
 
 A API utiliza autenticação baseada em token. Para acessar os endpoints protegidos, inclua o token no cabeçalho da requisição:
@@ -8,7 +28,21 @@ A API utiliza autenticação baseada em token. Para acessar os endpoints protegi
 Authorization: Token <seu-token>
 ```
 
-### REST API
+### Visão Geral da API
+
+#### Modelos
+- **Carro**: Representa um carro com os campos `Nome`, `Status` e uma chave estrangeira para `Foto`.
+- **Foto**: Contém campos `Extensão` e `Base64` para dados de imagem.
+
+#### Serializadores
+- **CarroSerializer**: Serializa objetos `Carro` com campos `id`, `Nome`, `Status` e `Foto`.
+- **FotoSerializer**: Serializa objetos `Foto` com campos `id`, `Extensão` e `Base64`.
+
+#### Visualizações
+- **CarroViewSet**: Fornece operações CRUD para objetos `Carro` com autenticação JWT.
+- **FotoViewSet**: Fornece operações de criação e recuperação para objetos `Foto` com autenticação JWT.
+
+### API REST
 
 #### Carros
 
@@ -22,13 +56,19 @@ Authorization: Token <seu-token>
 [
     {
         "id": 1,
-        "Name": "Nome do Carro",
-        "Status": 1
+        "Nome": "Nome do Carro",
+        "Status": 1,
+        "Foto": {
+            "id": 1,
+            "Extensão": "jpg",
+            "Base64": "string_base64_da_imagem"
+        }
     },
     {
         "id": 2,
-        "Name": "Outro Carro",
-        "Status": 0
+        "Nome": "Outro Carro",
+        "Status": 0,
+        "Foto": null
     }
 ]
 ```
@@ -40,8 +80,12 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
-    "Name": "Nome do Carro",
-    "Status": 1
+    "Nome": "Nome do Carro",
+    "Status": 1,
+    "Foto": {
+        "Extensão": "jpg",
+        "Base64": "string_base64_da_imagem"
+    }
 }
 ```
 - **Resposta de Sucesso** (201 Created)
@@ -55,8 +99,13 @@ Authorization: Token <seu-token>
 ```json
 {
     "id": 1,
-    "Name": "Nome do Carro",
-    "Status": 1
+    "Nome": "Nome do Carro",
+    "Status": 1,
+    "Foto": {
+        "id": 1,
+        "Extensão": "jpg",
+        "Base64": "string_base64_da_imagem"
+    }
 }
 ```
 
@@ -67,16 +116,25 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
-    "Name": "Nome Atualizado",
-    "Status": 0
+    "Nome": "Nome Atualizado",
+    "Status": 0,
+    "Foto": {
+        "Extensão": "png",
+        "Base64": "novo_string_base64_da_imagem"
+    }
 }
 ```
 - **Resposta de Sucesso** (200 OK):
 ```json
 {
     "id": 1,
-    "Name": "Nome Atualizado",
-    "Status": 0
+    "Nome": "Nome Atualizado",
+    "Status": 0,
+    "Foto": {
+        "id": 1,
+        "Extensão": "png",
+        "Base64": "novo_string_base64_da_imagem"
+    }
 }
 ```
 
@@ -96,16 +154,17 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
+    "Extensão": "jpg",
     "Base64": "string_base64_da_imagem"
 }
 ```
 - **Resposta de Sucesso** (201 Created)
 
-### GraphQL API
+### API GraphQL
 
 A API GraphQL está disponível no endpoint `/graphql/` e oferece as seguintes funcionalidades:
 
-#### Queries
+#### Consultas
 
 ##### Listar Carros
 - **Query**:
@@ -113,9 +172,14 @@ A API GraphQL está disponível no endpoint `/graphql/` e oferece as seguintes f
 query {
   cars {
     id
-    Name
+    Nome
     Status
     statusDisplay
+    Foto {
+      id
+      Extensão
+      Base64
+    }
   }
 }
 ```
@@ -126,9 +190,14 @@ query {
     "cars": [
       {
         "id": 1,
-        "Name": "Nome do Carro",
+        "Nome": "Nome do Carro",
         "Status": 1,
-        "statusDisplay": "DISPONIVEL"
+        "statusDisplay": "DISPONIVEL",
+        "Foto": {
+          "id": 1,
+          "Extensão": "jpg",
+          "Base64": "string_base64_da_imagem"
+        }
       }
     ]
   }
@@ -139,12 +208,17 @@ query {
 - **Mutation**:
 ```graphql
 mutation {
-  createCar(name: "Novo Carro", status: 1) {
+  createCar(name: "Novo Carro", status: 1, photo: { Extensão: "jpg", Base64: "string_base64_da_imagem" }) {
     car {
       id
-      Name
+      Nome
       Status
       statusDisplay
+      Foto {
+        id
+        Extensão
+        Base64
+      }
     }
   }
 }
@@ -153,10 +227,41 @@ mutation {
 ```json
 {
   "data": {
-    "createCar": null
+    "createCar": {
+      "car": {
+        "id": 1,
+        "Nome": "Novo Carro",
+        "Status": 1,
+        "statusDisplay": "DISPONIVEL",
+        "Foto": {
+          "id": 1,
+          "Extensão": "jpg",
+          "Base64": "string_base64_da_imagem"
+        }
+      }
+    }
   }
 }
 ```
+
+### Visão Geral da Autenticação
+
+#### Modelos
+- **UserToken**: Estende o modelo `Token` do Django para incluir funcionalidade de expiração.
+
+#### Serializadores
+- **UserSerializer**: Serializa objetos `User` com campos `id`, `username`, `email` e `password`.
+- **LoginSerializer**: Gerencia o login do usuário com `email` e `password`.
+
+#### Visualizações
+- **SignupViewSet**: Gerencia o cadastro do usuário.
+- **UserLoginApiView**: Gerencia o login do usuário e geração de token.
+
+#### Autenticação
+- Utiliza `UserTokenAuthentication` para proteger os endpoints da API.
+
+#### Notas
+- Os tokens são verificados por expiração e revogados automaticamente se expirados.
 
 ### Códigos de Status do Carro
 
