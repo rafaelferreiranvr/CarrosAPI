@@ -9,4 +9,4 @@ class PhotoSerializer(serializers.ModelSerializer):
 class CarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Car
-        fields = ['id', 'Name', 'Status', 'Photo']
+        fields = ['id', 'Name', 'Status']
