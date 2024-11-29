@@ -20,16 +20,8 @@ class DashboardView extends IElement {
             .SetStyle('padding', '40px 20px');
 
         // Create and style cards container
-        this._cardsContainer = new IElement(document.createElement('div'));
-        this._cardsContainer
-            .SetDisplay(Display.Grid)
-            .SetStyle('gridTemplateColumns', 'repeat(2, 600px)')
-            .SetStyle('justify-content', 'center')
-            .SetStyle('column-gap', '20px')
-            .SetStyle('row-gap', '20px')
-            .SetStyle('padding', '32px')
-            .SetStyle('margin', '0 auto')
-            .SetClassName('dashboard-cards-container');
+        this._cardsContainer = new CardLayout();
+        this._cardsContainer.SetClassName('dashboard-cards-container');
 
         // Create loading element
         this._loadingElement = new Loading();
