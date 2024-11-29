@@ -2,8 +2,7 @@ class AddCarCard extends Card {
     _nameInput;
     _statusSelect;
     _addButton;
-    _imageUpload;
-    _imageDisplay;
+    _imageControl;
     _onAdd;
     _selectedImage;
 
@@ -104,34 +103,25 @@ class AddCarCard extends Card {
             .SetStyle('flex', '0 0 220px')
             .SetClassName('add-car-card-image');
 
-        // Create image container
-        const imageContainer = new IElement(document.createElement('div'));
-        imageContainer
-            .SetDisplay(Display.Flex)
-            .SetJustifyContent(JustifyContent.Center)
-            .SetAlignItems(AlignItems.Center)
-            .SetWidth(280)  
-            .SetHeight(220)  
-            .SetStyle('background-color', '#f5f5f5')
-            .SetStyle('border-radius', '8px');
+        // Create image control
+        this._imageControl = new ImageControl(
+            (base64Image) => {
+                this._selectedImage = base64Image;
+                this._imageControl.SetImage(base64Image);
+            },
+            () => {
+                this._selectedImage = null;
+                this._imageControl.Clear();
+            }
+        );
 
-        // Create image display
-        this._imageDisplay = new ImageDisplay();
-        imageContainer.AppendChild(this._imageDisplay);
+        // Style image control container
+        this._imageControl
+            .SetWidth(280)
+            .SetStyle('border-radius', '8px')
+            .SetEditMode(true);
 
-        // Create image upload
-        this._imageUpload = new ImageUpload((base64Image) => {
-            this._selectedImage = base64Image;
-            this._imageDisplay.Render(base64Image);
-        });
-        this._imageUpload
-            .SetStyle('width', 'fit-content')
-            .SetBackgroundColor(new Color(33, 150, 243))  
-            .SetColor(new Color(255, 255, 255));
-
-        rightSide
-            .AppendChild(imageContainer)
-            .AppendChild(this._imageUpload);
+        rightSide.AppendChild(this._imageControl);
 
         // Add sides to content container
         contentContainer
@@ -160,8 +150,7 @@ class AddCarCard extends Card {
                 // Clear inputs
                 this._nameInput.SetValue('');
                 this._statusSelect.GetElement().value = StatusCar.Available;
-                this._imageUpload.Clear();
-                this._imageDisplay.Clear();
+                this._imageControl.Clear();
                 this._selectedImage = null;
 
                 // Notify parent to refresh car list

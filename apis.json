@@ -1,22 +1,23 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Cars API",
+    "title": "Carros API",
     "description": "API para gerenciamento de carros e suas fotos",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:3000",
+      "url": "http://localhost:8000",
       "description": "Servidor de desenvolvimento"
     }
   ],
   "components": {
     "securitySchemes": {
       "TokenAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "Token"
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Token <seu-token>"
       }
     },
     "schemas": {
@@ -24,43 +25,37 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "readOnly": true
           },
-          "model": {
+          "Name": {
             "type": "string"
           },
-          "brand": {
-            "type": "string"
+          "Status": {
+            "type": "string",
+            "enum": ["DISPONIVEL", "INDISPONIVEL"],
+            "description": "Status do carro"
           },
-          "status": {
-            "type": "integer",
-            "enum": [0, 1],
-            "description": "0 - INDISPONIVEL, 1 - DISPONIVEL"
+          "Base64": {
+            "type": "string",
+            "description": "Imagem em base64 (opcional)"
           }
         },
-        "required": ["model", "brand", "status"]
+        "required": ["Name", "Status"]
       },
       "Photo": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
+            "type": "string",
             "readOnly": true
           },
-          "car": {
-            "type": "integer",
-            "description": "ID do carro associado"
-          },
-          "image": {
+          "Base64": {
             "type": "string",
-            "format": "binary"
-          },
-          "description": {
-            "type": "string"
+            "description": "Imagem em base64"
           }
         },
-        "required": ["car", "image"]
+        "required": ["Base64"]
       },
       "User": {
         "type": "object",
@@ -98,10 +93,44 @@
         },
         "responses": {
           "201": {
-            "description": "Usuário criado com sucesso"
+            "description": "Usuário criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
-            "description": "Dados inválidos"
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": ["usernameExists", "userEmailExists"]
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -139,6 +168,15 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
                     "token": {
                       "type": "string"
                     }
@@ -148,7 +186,20 @@
             }
           },
           "400": {
-            "description": "Credenciais inválidas"
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": ["userNotFound", "invalidPassword"]
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -171,6 +222,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Não autenticado"
           }
         }
       },
@@ -194,6 +248,9 @@
           },
           "400": {
             "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autenticado"
           }
         }
       }
@@ -205,7 +262,7 @@
           "in": "path",
           "required": true,
           "schema": {
-            "type": "integer"
+            "type": "string"
           }
         }
       ],
@@ -223,6 +280,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Não autenticado"
           },
           "404": {
             "description": "Carro não encontrado"
@@ -250,6 +310,9 @@
           "400": {
             "description": "Dados inválidos"
           },
+          "401": {
+            "description": "Não autenticado"
+          },
           "404": {
             "description": "Carro não encontrado"
           }
@@ -260,11 +323,79 @@
         "summary": "Excluir carro",
         "security": [{"TokenAuth": []}],
         "responses": {
-          "204": {
+          "200": {
             "description": "Carro excluído com sucesso"
+          },
+          "401": {
+            "description": "Não autenticado"
           },
           "404": {
             "description": "Carro não encontrado"
+          }
+        }
+      }
+    },
+    "/api/car/search/": {
+      "post": {
+        "tags": ["Carros"],
+        "summary": "Buscar carros",
+        "security": [{"TokenAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "example": "query Query { searchCars(name: \"Lam\") { id Status Name } }"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado da busca",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "searchCars": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Car"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "searchCars": [
+                      {
+                        "id": "27",
+                        "Status": "DISPONIVEL",
+                        "Name": "Lamborghini"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Query inválida"
+          },
+          "401": {
+            "description": "Não autenticado"
           }
         }
       }
@@ -287,17 +418,20 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Não autenticado"
           }
         }
       },
       "post": {
         "tags": ["Fotos"],
-        "summary": "Enviar nova foto",
+        "summary": "Upload de foto",
         "security": [{"TokenAuth": []}],
         "requestBody": {
           "required": true,
           "content": {
-            "multipart/form-data": {
+            "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/Photo"
               }
@@ -306,10 +440,13 @@
         },
         "responses": {
           "201": {
-            "description": "Foto enviada com sucesso"
+            "description": "Foto criada com sucesso"
           },
           "400": {
             "description": "Dados inválidos"
+          },
+          "401": {
+            "description": "Não autenticado"
           }
         }
       }
@@ -321,7 +458,7 @@
           "in": "path",
           "required": true,
           "schema": {
-            "type": "integer"
+            "type": "string"
           }
         }
       ],
@@ -339,6 +476,45 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Não autenticado"
+          },
+          "404": {
+            "description": "Foto não encontrada"
+          }
+        }
+      }
+    },
+    "/api/photo/render/{id}/": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "get": {
+        "tags": ["Fotos"],
+        "summary": "Renderizar foto",
+        "security": [{"TokenAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Imagem",
+            "content": {
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado"
           },
           "404": {
             "description": "Foto não encontrada"

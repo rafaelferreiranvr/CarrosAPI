@@ -72,13 +72,14 @@ class UserLoginApiView(APIView):
         }, status=status.HTTP_200_OK)
 
 class UserLogoutApiView(APIView):
-    authentication_classes = [authentications.UserTokenAuthentication]
+    token_model = models.UserToken
+    authentication_classes = [authentications.UserTokenAuthentication,]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         if not request.user.is_authenticated or type(request.user) != User:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        token = models.UserToken.objects.get(user=request.user)
+        token = self.token_model.objects.get(user=request.user)
         token.revoke()
         return Response({'message': 'Logout realizado com sucesso'}, status=status.HTTP_200_OK)

@@ -39,8 +39,13 @@ class Account {
         try {
             const response = await new ClientRequest('/auth/logout/', 'POST')
                 .AddHeader('Authorization', 'Token ' + this.GetToken())
-                .OnResponse(onSuccess)
-                .OnError(onError)
+                .OnResponse(() => {
+                    this.Clear();
+                    onSuccess();
+                })
+                .OnError(() => { 
+                    this.Clear(); 
+                    onError();})
                 .Send();
 
         } catch (error) {

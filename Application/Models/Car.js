@@ -22,7 +22,7 @@ class Car {
 }
 
 class CarModel {
-    
+
     static GetAll(onSuccess, onError) {
         try {
             new ClientRequest('/api/car/', 'GET')
@@ -38,7 +38,10 @@ class CarModel {
                     )) : [];
                     onSuccess(cars);
                 })
-                .OnError(onError)
+                .OnError(error => {
+                    this.HandleServerMessages(error, 'Erro ao carregar carros.');
+                    onError(error);
+                })
                 .Send();
         } catch (error) {
             onError(error);
@@ -52,13 +55,17 @@ class CarModel {
                 .OnResponse(data => {
                     const car = new Car(
                         data.id,
-                        data.name,
-                        data.status,
-                        data.photoId
+                        data.Name,
+                        data.Status,
+                        data.Photo,
+                        data.Base64
                     );
                     onSuccess(car);
                 })
-                .OnError(onError)
+                .OnError(error => {
+                    this.HandleServerMessages(error, 'Erro ao carregar carro.');
+                    onError(error);
+                })
                 .Send();
         } catch (error) {
             onError(error);
@@ -67,7 +74,6 @@ class CarModel {
 
     static Post(name, status, base64, onSuccess, onError) {
         try {
-
             let data = {
                 "Name": name, 
                 "Status": status, 
@@ -80,15 +86,16 @@ class CarModel {
             new ClientRequest('/api/car/', 'POST')
                 .SetData(data)
                 .AddHeader('Authorization', 'Token ' + Account.GetToken())
-                .OnResponse(onSuccess)
-                .OnError((error) => {
-                    console.log('Car POST error:', error);
+                .OnResponse(response => {
+                    this.HandleServerMessages(null, 'Carro adicionado com sucesso!');
+                    onSuccess(response);
+                })
+                .OnError(error => {
+                    this.HandleServerMessages(error, 'Erro ao adicionar carro.');
                     onError(error);
                 })
                 .Send();
-
         } catch (error) {
-            console.log('Car POST catch error:', error);
             onError(error);
         }
     }
@@ -105,17 +112,18 @@ class CarModel {
             }
 
             new ClientRequest(`/api/car/${id}/`, 'PUT')
-                .AddHeader('Authorization', 'Token ' + Account.GetToken())
                 .SetData(data)
-                .OnResponse(onSuccess)
-                .OnError((error) => {
-                    console.log('Car PUT error:', error);
+                .AddHeader('Authorization', 'Token ' + Account.GetToken())
+                .OnResponse(response => {
+                    this.HandleServerMessages(null, 'Carro atualizado com sucesso!');
+                    onSuccess(response);
+                })
+                .OnError(error => {
+                    this.HandleServerMessages(error, 'Erro ao atualizar carro.');
                     onError(error);
                 })
                 .Send();
-
         } catch (error) {
-            console.log('Car PUT catch error:', error);
             onError(error);
         }
     }
@@ -124,11 +132,43 @@ class CarModel {
         try {
             new ClientRequest(`/api/car/${id}/`, 'DELETE')
                 .AddHeader('Authorization', 'Token ' + Account.GetToken())
-                .OnResponse(onSuccess)
-                .OnError(onError)
+                .OnResponse(() => {
+                    this.HandleServerMessages(null, 'Carro excluído com sucesso!');
+                    onSuccess();
+                })
+                .OnError(error => {
+                    this.HandleServerMessages(error, 'Erro ao excluir carro.');
+                    onError(error);
+                })
                 .Send();
         } catch (error) {
             onError(error);
         }
     }
+
+    static HandleServerMessages(error, defaultMessage) {
+        if (error?.status === 401) {
+
+            SystemMessage.ShowMessage('Sessão expirada. Por favor, faça login novamente.', SystemMessage.MessageType.Error);
+            Account.Clear();
+            window.app.showView('login');
+
+            return;
+        }
+
+        const messages = {
+            400: 'Dados inválidos. Verifique os campos e tente novamente.',
+            404: 'Carro não encontrado.',
+            405: 'Operação não permitida.'
+        };
+
+        // Only show error message if we're not on login view
+        const currentView = window.app.getCurrentView();
+        if (!(currentView instanceof LoginView)) {
+            const message = error ? (messages[error.status] || defaultMessage) : defaultMessage;
+            const type = error ? SystemMessage.MessageType.Error : SystemMessage.MessageType.Success;
+            SystemMessage.ShowMessage(message, type);
+        }
+    }
+
 }

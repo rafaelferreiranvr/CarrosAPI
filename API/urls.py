@@ -8,4 +8,5 @@ router.register(r'photo', views.PhotoViewSet, basename='photo')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('photo/render/<int:pk>/', views.PhotoRenderView.as_view(), name='photo-render'),
 ]

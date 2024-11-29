@@ -5,6 +5,9 @@ from .serializers import CarSerializer, PhotoSerializer
 from django.contrib.auth.models import User
 from Auth import authentications
 from functools import partial
+import base64
+from django.http import HttpResponse
+from rest_framework import views
 
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
@@ -47,7 +50,7 @@ class CarViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = self.get_serializer(car)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, pk=None):
         if not request.user.is_authenticated or type(request.user) != User:
@@ -102,6 +105,14 @@ class PhotoViewSet(viewsets.ModelViewSet):
     serializer_class = PhotoSerializer
     authentication_classes = [authentications.UserTokenAuthentication,]
 
+    def list(self, request):
+        if not request.user.is_authenticated or type(request.user) != User:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        photos = self.get_queryset()
+        serializer = self.get_serializer(photos, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def create(self, request):
         if not request.user.is_authenticated or type(request.user) != User:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -117,13 +128,36 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         if not request.user.is_authenticated or type(request.user) != User:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-
         try:
-            photo = Photo.objects.get(pk=pk)
+            photo = self.get_queryset().get(pk=pk)
         except Photo.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        return Response({"Base64": photo.Base64}, status=status.HTTP_200_OK) #" photo.Base64, status=status.HTTP_200_OK)
+        return Response({"Base64": photo.Base64}, status=status.HTTP_200_OK)
 
-    list = partial_update = destroy = \
+    partial_update = destroy = \
         lambda self, request, *args, **kwargs: Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+class PhotoRenderView(views.APIView):
+    authentication_classes = [authentications.UserTokenAuthentication,]
+
+    def get(self, request, pk):
+        if not request.user.is_authenticated or type(request.user) != User:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            photo = Photo.objects.get(pk=pk)
+
+            mime_type = photo.Base64.split(';')[0].split(':')[1]
+            extension = mime_type.split('/')[-1]
+            pure_base64 = photo.Base64.split(',')[1]
+            image_data = base64.b64decode(pure_base64)
+            
+            response = HttpResponse(image_data, content_type=mime_type)
+            response['Content-Disposition'] = f'inline; filename="photo_{pk}.{extension}"'
+            return response
+            
+        except Photo.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

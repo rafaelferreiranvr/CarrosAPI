@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'graphene_django',
     'Auth.apps.AuthConfig',
     'API.apps.ApiConfig',
     'Application.apps.ApplicationConfig',
@@ -135,6 +136,20 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'Application',
 ]
+
+GRAPHENE = {
+    'SCHEMA': 'API.schema.schema',
+}
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'Auth.authentications.UserTokenAuthentication',
+    ],
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

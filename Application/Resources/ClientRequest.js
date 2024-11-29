@@ -75,15 +75,23 @@ class ClientRequest {
             const response = await fetch(this._url, options);
             
             if (!response.ok) {
+                const error = new Error('Request failed');
+                error.status = response.status;
+                
                 const contentType = response.headers.get("content-type");
                 if (contentType && contentType.includes("application/json")) {
                     const responseData = await response.json();
-                    const error = new Error(responseData.message || 'Request failed');
-                    error.response = { data: responseData };
-                    throw error;
+                    error.response = { 
+                        data: responseData,
+                        status: response.status 
+                    };
                 } else {
-                    throw new Error('Request failed');
+                    error.response = { 
+                        data: { message: 'Request failed' },
+                        status: response.status
+                    };
                 }
+                throw error;
             }
             
             const contentType = response.headers.get("content-type");
@@ -94,12 +102,14 @@ class ClientRequest {
             }
             
             this.TriggerResponse(responseData);
-
             return this;
 
         } catch (error) {
             if (!error.response) {
-                error.response = { data: { message: error.message } };
+                error.response = { 
+                    data: { message: error.message },
+                    status: error.status || 500
+                };
             }
             this.TriggerError(error);
             return this;

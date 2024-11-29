@@ -1,5 +1,4 @@
 ## Documentação da API
-
 ### Docker
 
 Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passos abaixo:
@@ -12,13 +11,26 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
    - Este comando irá construir a imagem e iniciar os serviços definidos no arquivo `docker-compose.yml`.
 
 2. **Acessar a Aplicação**:
-   - A aplicação estará disponível em `http://localhost:8000`.
+
+   - O Aplicativo estará disponível em `http://localhost:8000/`.
+   - A API de Autenticação estará disponível em `http://localhost:8000/auth/`.
+   - A API Geral estará disponível em `http://localhost:8000/api/`.
 
 3. **Parar os Containers**:
    - Para parar os containers em execução, utilize o comando:
      ```bash
      docker-compose down
-     ```
+
+### Aplicativo
+O aplicativo fornece uma interface web que auxilia na testagem das APIs, autenticação e exibição de imagens. Disponível em `http://localhost:8000/`.
+
+### Autenticação
+
+Para acessar os endpoints protegidos, inclua o token no cabeçalho da requisição:
+
+```
+Authorization: Token <seu-token>
+```
 
 ### Endpoints de Autenticação
 
@@ -46,7 +58,7 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
 - **Solicitação**:
 ```json
 {
-    "username": "seu_usuario",
+    "email": "seu_email@exemplo.com",
     "password": "sua_senha"
 }
 ```
@@ -58,7 +70,9 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
 ```
 - **Códigos de Resposta**:
   - `200 OK`: Login bem-sucedido
-  - `400 Bad Request`: Credenciais inválidas
+  - `400 Bad Request`: Dados inválidos
+    - Usuário não encontrado: `{"error": "userNotFound"}`
+    - Senha inválida: `{"error": "invalidPassword"}`
   - `401 Unauthorized`: Autenticação falhou
 
 #### Logout
@@ -68,28 +82,6 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
 - **Códigos de Resposta**:
   - `200 OK`: Logout bem-sucedido
   - `401 Unauthorized`: Token inválido ou expirado
-
-### Autenticação
-
-A API utiliza autenticação baseada em token. Para acessar os endpoints protegidos, inclua o token no cabeçalho da requisição:
-
-```
-Authorization: Token <seu-token>
-```
-
-### Visão Geral da API
-
-#### Modelos
-- **Carro**: Representa um carro com os campos `Nome`, `Status` e uma chave estrangeira para `Foto`.
-- **Foto**: Contém campos `Extensão` e `Base64` para dados de imagem.
-
-#### Serializadores
-- **CarroSerializer**: Serializa objetos `Carro` com campos `id`, `Nome`, `Status` e `Foto`.
-- **FotoSerializer**: Serializa objetos `Foto` com campos `id`, `Extensão` e `Base64`.
-
-#### Visualizações
-- **CarroViewSet**: Fornece operações CRUD para objetos `Carro` com autenticação JWT.
-- **FotoViewSet**: Fornece operações de criação e recuperação para objetos `Foto` com autenticação JWT.
 
 ### API REST
 
@@ -103,18 +95,18 @@ Authorization: Token <seu-token>
 ```json
 [
     {
-        "id": 24,
-        "Name": "Fusca Vermelho",
+        "id": 1,
+        "Name": "Carro A",
         "Status": 1,
-        "Photo": 20,
-        "Base64": "string_base64_da_imagem"
+        "Photo": 10,
+        "Base64": "..."
     },
     {
-        "id": 23,
-        "Name": "HB20",
-        "Status": 1,
-        "Photo": 29,
-        "Base64": "string_base64_da_imagem"
+        "id": 2,
+        "Name": "Carro B",
+        "Status": 0,
+        "Photo": 11,
+        "Base64": "..."
     }
 ]
 ```
@@ -129,7 +121,7 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
-    "Name": "HB20S",
+    "Name": "Carro A",
     "Status": 1,
     "Base64": "data:image/jpeg;base64,..."
 }
@@ -137,7 +129,7 @@ Authorization: Token <seu-token>
 ou
 ```json
 {
-    "Name": "HB20S",
+    "Name": "Carro A",
     "Status": 1
 }
 ```
@@ -153,11 +145,11 @@ ou
 - **Resposta de Sucesso** (200 OK):
 ```json
 {
-    "id": 24,
-    "Name": "Fusca Vermelho",
+    "id": 1,
+    "Name": "Carro A",
     "Status": 1,
     "Photo": 20,
-    "Base64": "string_base64_da_imagem"
+    "Base64": "..."
 }
 ```
 - **Códigos de Resposta**:
@@ -172,7 +164,7 @@ ou
 - **Solicitação**:
 ```json
 {
-    "Name": "HB20S",
+    "Name": "Carro A",
     "Status": 1,
     "Base64": "data:image/jpeg;base64,..."
 }
@@ -180,7 +172,7 @@ ou
 ou
 ```json
 {
-    "Name": "HB20S",
+    "Name": "Carro A",
     "Status": 1
 }
 ```
@@ -198,7 +190,44 @@ ou
   - `200 OK`: Exclusão bem-sucedida
   - `401 Unauthorized`: Não autenticado
   - `404 Not Found`: Carro não encontrado
-  - `405 Method Not Allowed`: Método não permitido
+
+#### Buscar Carros
+- **URL**: `/api/car/search/`
+- **Método**: POST
+- **Autenticação**: Requerida (Token)
+- **Headers**: {`Authorization`: `Token <seu-token>`}
+- **Solicitação**:
+```graphql
+query Query {
+  searchCars(name: "Lam") {
+    id
+    Status
+    Name
+  }
+}
+```
+- **Resposta de Sucesso** (200 OK):
+```json
+{
+  "data": {
+    "searchCars": [
+      {
+        "id": "27",
+        "Status": "DISPONIVEL",
+        "Name": "Lamborghini"
+      }
+    ]
+  }
+}
+```
+- **Códigos de Resposta**:
+  - `200 OK`: Sucesso
+  - `400 Bad Request`: Query inválida
+  - `401 Unauthorized`: Não autenticado
+
+**Valores possíveis para Status**:
+- `DISPONIVEL`: Carro disponível
+- `INDISPONIVEL`: Carro indisponível
 
 #### Fotos
 
@@ -211,16 +240,31 @@ ou
 [
     {
         "id": 19,
-        "Base64": "string_base64_da_imagem"
+        "Base64": "..."
     },
     {
         "id": 20,
-        "Base64": "string_base64_da_imagem"
+        "Base64": "..."
     }
 ]
 ```
 - **Códigos de Resposta**:
   - `200 OK`: Sucesso
+  - `401 Unauthorized`: Não autenticado
+
+##### Upload de Foto
+- **URL**: `/api/photo/`
+- **Método**: POST
+- **Autenticação**: Requerida
+- **Solicitação**:
+```json
+{
+    "Base64": "..."
+}
+```
+- **Códigos de Resposta**:
+  - `201 Created`: Foto criada com sucesso
+  - `400 Bad Request`: Dados inválidos
   - `401 Unauthorized`: Não autenticado
 
 ##### Detalhes da Foto
@@ -231,7 +275,7 @@ ou
 ```json
 {
     "id": 19,
-    "Base64": "string_base64_da_imagem"
+    "Base64": "..."
 }
 ```
 - **Códigos de Resposta**:
@@ -239,147 +283,12 @@ ou
   - `401 Unauthorized`: Não autenticado
   - `404 Not Found`: Foto não encontrada
 
-##### Obter Arquivo de Imagem
-- **URL**: `/api/photo/file/{id}`
+##### Renderizar Foto
+- **URL**: `/api/photo/render/{id}`
 - **Método**: GET
 - **Autenticação**: Requerida
-- **Resposta**: Arquivo de Imagem
+- **Resposta**: Imagem
 - **Códigos de Resposta**:
   - `200 OK`: Sucesso
   - `401 Unauthorized`: Não autenticado
   - `404 Not Found`: Foto não encontrada
-
-##### Upload de Foto
-- **URL**: `/api/photo/`
-- **Método**: POST
-- **Autenticação**: Requerida
-- **Solicitação**:
-```json
-{
-    "Base64": "string_base64_da_imagem"
-}
-```
-- **Códigos de Resposta**:
-  - `201 Created`: Foto criada com sucesso
-  - `400 Bad Request`: Dados inválidos
-  - `401 Unauthorized`: Não autenticado
-
-### API GraphQL
-
-A API GraphQL está disponível no endpoint `/graphql/` e oferece as seguintes funcionalidades:
-
-#### Consultas
-
-##### Listar Carros
-- **Query**:
-```graphql
-query {
-  cars {
-    id
-    Nome
-    Status
-    statusDisplay
-    Foto {
-      id
-      Extensão
-      Base64
-    }
-  }
-}
-```
-- **Resposta**:
-```json
-{
-  "data": {
-    "cars": [
-      {
-        "id": 1,
-        "Nome": "Nome do Carro",
-        "Status": 1,
-        "statusDisplay": "DISPONIVEL",
-        "Foto": {
-          "id": 1,
-          "Extensão": "jpg",
-          "Base64": "string_base64_da_imagem"
-        }
-      }
-    ]
-  }
-}
-```
-
-##### Criar Carro
-- **Mutation**:
-```graphql
-mutation {
-  createCar(name: "Novo Carro", status: 1, photo: { Extensão: "jpg", Base64: "string_base64_da_imagem" }) {
-    car {
-      id
-      Nome
-      Status
-      statusDisplay
-      Foto {
-        id
-        Extensão
-        Base64
-      }
-    }
-  }
-}
-```
-- **Resposta**:
-```json
-{
-  "data": {
-    "createCar": {
-      "car": {
-        "id": 1,
-        "Nome": "Novo Carro",
-        "Status": 1,
-        "statusDisplay": "DISPONIVEL",
-        "Foto": {
-          "id": 1,
-          "Extensão": "jpg",
-          "Base64": "string_base64_da_imagem"
-        }
-      }
-    }
-  }
-}
-```
-
-### Visão Geral da Autenticação
-
-#### Modelos
-- **UserToken**: Estende o modelo `Token` do Django para incluir funcionalidade de expiração.
-
-#### Serializadores
-- **UserSerializer**: Serializa objetos `User` com campos `id`, `username`, `email` e `password`.
-- **LoginSerializer**: Gerencia o login do usuário com `email` e `password`.
-
-#### Visualizações
-- **SignupViewSet**: Gerencia o cadastro do usuário.
-- **UserLoginApiView**: Gerencia o login do usuário e geração de token.
-
-#### Autenticação
-- Utiliza `UserTokenAuthentication` para proteger os endpoints da API.
-
-#### Notas
-- Os tokens são verificados por expiração e revogados automaticamente se expirados.
-
-### Códigos de Status do Carro
-
-- `DISPONIVEL`: 1
-- `INDISPONIVEL`: 0
-
-### Notas Importantes
-
-1. Todos os endpoints protegidos requerem o token de autenticação no cabeçalho
-2. As fotos são enviadas em formato Base64
-3. As respostas incluem códigos HTTP padrão:
-   - 200: Sucesso
-   - 201: Criado com sucesso
-   - 204: Excluído com sucesso
-   - 400: Erro na requisição
-   - 401: Não autorizado
-   - 404: Não encontrado

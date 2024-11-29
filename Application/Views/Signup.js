@@ -2,7 +2,8 @@ class SignupView extends IElement {
     _signupPanel;
 
     constructor() {
-        super();
+        const element = document.createElement('div');
+        super(element);
         this.createElements();
     }
 
@@ -26,10 +27,9 @@ class SignupView extends IElement {
 
     async handleSubmit(formData) {
 
-        this._signupPanel
-        .GetNameInput().ClearError()
-        .GetEmailInput().ClearError()
-        .GetPasswordInput().ClearError();
+        this._signupPanel.GetNameInput().ClearError();
+        this._signupPanel.GetEmailInput().ClearError();
+        this._signupPanel.GetPasswordInput().ClearError();
 
         LoadingScreen.GetInstance().Show();
 

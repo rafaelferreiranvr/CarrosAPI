@@ -128,7 +128,6 @@ class DashboardView extends IElement {
             // onError
             (error) => {
                 console.log('CarModel.GetAll error:', error);
-                SystemMessage.ShowMessage('Erro ao carregar os carros.', SystemMessage.MessageType.Error);
                 this._loadingElement.Hide();
             }
         );
