@@ -36,6 +36,9 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
 - **Códigos de Resposta**:
   - `201 Created`: Conta criada com sucesso
   - `400 Bad Request`: Dados inválidos
+    - Usuário já existe: `{"error": "usernameExists"}`
+    - Email já existe: `{"error": "userEmailExists"}`
+  - `401 Unauthorized`: Autenticação falhou
 
 #### Login
 - **URL**: `/auth/login/`
