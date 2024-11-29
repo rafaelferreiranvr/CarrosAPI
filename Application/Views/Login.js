@@ -43,6 +43,7 @@ class LoginView extends IElement {
 
                 },
                 (error) => {
+                    console.log('Login error:', error);
                     LoadingScreen.GetInstance().Hide();
                     const errorData = error.response?.data || {};
                     
@@ -62,6 +63,7 @@ class LoginView extends IElement {
             );
         } catch (error) {
 
+            console.log('Login catch error:', error);
             LoadingScreen.GetInstance().Hide();
             console.error('Login error:', error);
             SystemMessage.ShowMessage('Erro de conexão. Tente novamente.', SystemMessage.MessageType.Error);

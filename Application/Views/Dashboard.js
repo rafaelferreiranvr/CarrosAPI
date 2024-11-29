@@ -23,7 +23,7 @@ class DashboardView extends IElement {
         this._cardsContainer = new IElement(document.createElement('div'));
         this._cardsContainer
             .SetDisplay(Display.Grid)
-            .SetStyle('gridTemplateColumns', 'repeat(2, 630px)')
+            .SetStyle('gridTemplateColumns', 'repeat(2, 600px)')
             .SetStyle('justify-content', 'center')
             .SetStyle('column-gap', '20px')
             .SetStyle('row-gap', '20px')
@@ -80,20 +80,21 @@ class DashboardView extends IElement {
     }
 
     HandleLogout() {
-        // Clear any stored data
-        this._cars = [];
+        LoadingScreen.GetInstance().Show();
         
-        // Clear authentication data
-        Account.Clear();
-        
-        // Return to login view
-        const app = document.getElementById('ViewContainer');
-        if (app) {
-            app.innerHTML = '';
-            app.appendChild(new LoginView().GetElement());
-        }
-
-        SystemMessage.ShowMessage('Logout realizado com sucesso!', SystemMessage.MessageType.Success);
+        Account.Logout(
+            () => {
+                this._cars = [];
+                LoadingScreen.GetInstance().Hide();
+                window.app.showView('login');
+                SystemMessage.ShowMessage('Logout realizado com sucesso!', SystemMessage.MessageType.Success);
+            },
+            (error) => {
+                LoadingScreen.GetInstance().Hide();
+                console.error('Logout error:', error);
+                SystemMessage.ShowMessage('Erro ao fazer logout', SystemMessage.MessageType.Error);
+            }
+        );
     }
 
     LoadCars() {
@@ -111,7 +112,7 @@ class DashboardView extends IElement {
                 this._cardsContainer.SetInnerHTML('');
                 
                 // Add the AddCarCard first
-                const addCard = new AddCarCard((newCar) => this.HandleAddCar(newCar));
+                const addCard = new AddCarCard((newCar) => this.HandleAddCar());
                 this._cardsContainer.AppendChild(addCard);
                 
                 // Add the car cards
@@ -126,32 +127,36 @@ class DashboardView extends IElement {
             },
             // onError
             (error) => {
-                SystemMessage.ShowMessage('Erro ao carregar os carros: ' + error.message, SystemMessage.MessageType.Error);
+                console.log('CarModel.GetAll error:', error);
+                SystemMessage.ShowMessage('Erro ao carregar os carros.', SystemMessage.MessageType.Error);
                 this._loadingElement.Hide();
             }
         );
     }
 
-    HandleAddCar(newCar) {
-        // Generate a new ID (in a real app, this would come from the server)
-        newCar.id = Math.max(...this._cars.map(car => car.id), 0) + 1;
-        
-        // Add to local array
-        this._cars.push(newCar);
-        
-        // Refresh the view
-        this.LoadCars();
-        
-        SystemMessage.ShowMessage('Carro adicionado com sucesso!', SystemMessage.MessageType.Success);
+    HandleAddCar() {  
+        this.LoadCars();  
     }
 
     HandleEditCar(updatedCar) {
-        // Update local array
-        const index = this._cars.findIndex(car => car.id === updatedCar.id);
-        if (index !== -1) {
-            this._cars[index] = updatedCar;
-            SystemMessage.ShowMessage('Carro atualizado com sucesso!', SystemMessage.MessageType.Success);
-        }
+        LoadingScreen.GetInstance().Show();
+        
+        CarModel.Put(
+            updatedCar.id,
+            updatedCar.name,
+            updatedCar.status,
+            updatedCar.photo,
+            () => {
+                LoadingScreen.GetInstance().Hide();
+                SystemMessage.ShowMessage('Carro atualizado com sucesso!', SystemMessage.MessageType.Success);
+                this.LoadCars();
+            },
+            (error) => {
+                console.log('CarModel.Put error:', error);
+                LoadingScreen.GetInstance().Hide();
+                SystemMessage.ShowMessage('Erro ao atualizar o carro.', SystemMessage.MessageType.Error);
+            }
+        );
     }
 
     HandleDeleteCar(carToDelete) {
@@ -170,8 +175,9 @@ class DashboardView extends IElement {
                 SystemMessage.ShowMessage('Carro removido com sucesso!', SystemMessage.MessageType.Success);
             },
             (error) => {
+                console.log('CarModel.Delete error:', error);
                 LoadingScreen.GetInstance().Hide();
-                SystemMessage.ShowMessage('Erro ao remover o carro: ' + error.message, SystemMessage.MessageType.Error);
+                SystemMessage.ShowMessage('Erro ao remover o carro.', SystemMessage.MessageType.Error);
             }
         );
     }

@@ -16,7 +16,7 @@ class ImageUpload extends IElement {
         // Create the hidden file input
         this._fileInput = document.createElement('input');
         this._fileInput.type = 'file';
-        this._fileInput.accept = 'image/*';
+        this._fileInput.accept = '.jpg, .jpeg, .png';
         this._fileInput.style.display = 'none';
         this._fileInput.addEventListener('change', () => this.HandleFileSelection());
 
@@ -42,7 +42,13 @@ class ImageUpload extends IElement {
     HandleFileSelection() {
         const file = this._fileInput.files[0];
         if (file) {
-            // Removed reference to _input
+            // Check if file type is allowed
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                SystemMessage.ShowMessage('Por favor, selecione apenas arquivos JPG, JPEG ou PNG.', SystemMessage.MessageType.Error);
+                return;
+            }
+
             // Convert to base64
             const reader = new FileReader();
             reader.onload = (e) => {

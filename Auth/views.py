@@ -1,11 +1,14 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from . import models, serializers
 from datetime import timedelta
 from django.utils import timezone
 from .settings import AUTH_TOKEN_LIFETIME
+from . import authentications
 
 class SignupViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
@@ -67,3 +70,15 @@ class UserLoginApiView(APIView):
             'email': user.email,
             'token': token.key,
         }, status=status.HTTP_200_OK)
+
+class UserLogoutApiView(APIView):
+    authentication_classes = [authentications.UserTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not request.user.is_authenticated or type(request.user) != User:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        token = models.UserToken.objects.get(user=request.user)
+        token.revoke()
+        return Response({'message': 'Logout realizado com sucesso'}, status=status.HTTP_200_OK)

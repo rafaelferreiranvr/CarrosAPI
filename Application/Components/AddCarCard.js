@@ -142,7 +142,7 @@ class AddCarCard extends Card {
     }
 
     HandleAdd() {
-        const name = this._nameInput.GetValue();
+        const name = this._nameInput.GetValue().trim();
         const status = this._statusSelect.GetElement().value;
 
         if (!name) {
@@ -164,14 +164,14 @@ class AddCarCard extends Card {
                 this._imageDisplay.Clear();
                 this._selectedImage = null;
 
-                // Create and add new car to the list
-                const newCar = new Car(null, name, parseInt(status));
-                newCar.photo = this._selectedImage;
-                this._onAdd(newCar);
+                // Notify parent to refresh car list
+                if (this._onAdd) {
+                    this._onAdd();
+                }
             }, 
             error => {
                 LoadingScreen.GetInstance().Hide();
-                SystemMessage.ShowMessage('Erro ao adicionar carro.');
+                SystemMessage.ShowMessage('Ocorreu um erro inesperado.');
             }
         );
     }

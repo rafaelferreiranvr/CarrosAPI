@@ -47,6 +47,7 @@ class SignupView extends IElement {
                 },
                 (error) => {
 
+                    console.log('Signup error:', error);
                     LoadingScreen.GetInstance().Hide();
 
                     const errorData = error.response?.data || {};
@@ -60,8 +61,7 @@ class SignupView extends IElement {
                         this._signupPanel.GetEmailInput().ShowError('Este email já está em uso');
                     
                     } else {
-
-                        console.error('Signup error:', error);
+                        console.error('Signup error details:', error);
                         this._signupPanel.GetEmailInput().ShowError('Ocorreu um erro durante o cadastro');
                     
                     }
@@ -69,11 +69,10 @@ class SignupView extends IElement {
                 }
             );
         } catch (error) {
-
+            console.log('Signup catch error:', error);
             LoadingScreen.GetInstance().Hide();
             console.error('Signup error:', error);
-            SystemMessage.ShowMessage('Erro de conexão. Tente novamente.', SystemMessage.MessageType.Error);
-
+            SystemMessage.ShowMessage('Erro de conexão.', SystemMessage.MessageType.Error);
         }
     }
 

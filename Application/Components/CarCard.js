@@ -6,11 +6,10 @@ class CarCard extends Card {
     _nameInput;
     _statusSelect;
     _editButton;
-    _imageDisplay;
-    _imageUpload;
-    _removePhotoButton;
+    _imageControl;
     _onEdit;
     _onDelete;
+    _editIcon;
 
     constructor(car, onEdit, onDelete) {
         super();
@@ -28,7 +27,6 @@ class CarCard extends Card {
             .SetFlexDirection(FlexDirection.Row)
             .SetStyle('gap', '20px')
             .SetHeightPercent(100)
-            //.SetPaddingSymmetric(32, 0)
             .SetStyle('padding-bottom', '0')
             .SetId(`car-card-${car.id}`)
             .SetClassName('car-card');
@@ -117,101 +115,53 @@ class CarCard extends Card {
             .AppendChild(this._statusSelect)
             .AppendChild(this._editButton);
 
-        // Create right side (image)
-        const rightSide = new IElement(document.createElement('div'));
-        rightSide
-            .SetDisplay(Display.Flex)
-            .SetFlexDirection(FlexDirection.Column)
-            .SetJustifyContent(JustifyContent.Start)
-            .SetAlignItems(AlignItems.Center)
-            .SetStyle('gap', '12px')
-            .SetWidth(280)
-            .SetClassName('car-card-image');
-
-        // Create image container
-        const imageContainer = new IElement(document.createElement('div'));
-        imageContainer
-            .SetDisplay(Display.Flex)
-            .SetJustifyContent(JustifyContent.Center)
-            .SetAlignItems(AlignItems.Center)
-            .SetWidth(280)
-            .SetHeight(218)
-            .SetStyle('background-color', '#f5f5f5')
-            .SetStyle('border-radius', '8px')
-            .SetStyle('position', 'relative')
-            .SetClassName('car-card-image-container');
-
-        // Create remove photo button
-        const removePhotoButton = document.createElement('button');
-        removePhotoButton.textContent = '✕';
-        this._removePhotoButton = new Button(removePhotoButton);
-        this._removePhotoButton
-            .SetStyle('position', 'absolute')
-            .SetStyle('top', '8px')
-            .SetStyle('right', '8px')
-            .SetStyle('width', '24px')
-            .SetStyle('height', '24px')
-            .SetStyle('border-radius', '12px')
-            .SetStyle('background-color', 'rgba(97, 97, 97, 0.8)')
-            .SetStyle('color', '#ffffff')
-            .SetStyle('font-size', '14px')
-            .SetStyle('display', 'none')  // Start hidden
-            .SetStyle('justify-content', 'center')
-            .SetStyle('align-items', 'center')
-            .SetStyle('cursor', 'pointer')
-            .OnClick(() => this.HandleRemovePhoto());
-
-        // Create image display
-        this._imageDisplay = new ImageDisplay();
-        imageContainer
-            .AppendChild(this._imageDisplay)
-            .AppendChild(this._removePhotoButton);
-
+        // Create image control
+        this._imageControl = new ImageControl(
+            (base64Image) => {
+                this._car.base64 = base64Image;
+            },
+            () => this.HandleRemovePhoto()
+        );
+        
         if (car.base64) {
-            this._imageDisplay.Render(car.base64);
+            this._imageControl.SetImage(car.base64);
         }
-
-        // Create image upload button
-        this._imageUpload = new ImageUpload((base64Image) => {
-            this._car.base64 = base64Image;
-            this._imageDisplay.Render(base64Image);
-            this._onEdit(this._car);
-        });
-        this._imageUpload
-            .SetStyle('width', 'fit-content')
-            .SetBackgroundColor(new Color(33, 150, 243))
-            .SetColor(new Color(255, 255, 255))
-            .SetStyle('opacity', '0')
-            .SetStyle('pointer-events', 'none')
-            .SetClassName('car-card-image-upload');
-
-        rightSide
-            .AppendChild(imageContainer)
-            .AppendChild(this._imageUpload);
 
         // Create actions container
         const actionsContainer = new IElement(document.createElement('div'));
         actionsContainer
             .SetDisplay(Display.Flex)
             .SetStyle('position', 'absolute')
-            .SetStyle('top', '16px')
+            .SetStyle('top', '10px')
             .SetStyle('right', '16px')
             .SetStyle('gap', '8px')
             .SetClassName('car-card-actions');
 
-        const editButton = new IElement(document.createElement('button'));
+        // Create edit button
+        const editButton = new IHoverable(document.createElement('button'));
+        this._editIcon = editButton;  // Store reference to update in edit mode
         editButton
             .SetStyle('background', 'none')
             .SetStyle('border', 'none')
+            .SetStyle('padding', '8px')
+            .SetStyle('border-radius', '4px')
+            .SetStyle('cursor', 'pointer')
+            .SetStyle('transition', 'background-color 0.2s')
             .SetInnerHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>')
+            .SetColors(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0.05), new Color(0, 0, 0, 0.1))
             .AddEventListener('click', () => this.ToggleEditMode())
             .SetClassName('car-card-edit-icon');
 
-        const deleteButton = new IElement(document.createElement('button'));
+        const deleteButton = new IHoverable(document.createElement('button'));
         deleteButton
             .SetStyle('background', 'none')
             .SetStyle('border', 'none')
+            .SetStyle('padding', '8px')
+            .SetStyle('border-radius', '4px')
+            .SetStyle('cursor', 'pointer')
+            .SetStyle('transition', 'background-color 0.2s')
             .SetInnerHTML('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a3 3 0 0 1 3-3h0a3 3 0 0 1 3 3v2"></path></svg>')
+            .SetColors(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0.05), new Color(0, 0, 0, 0.1))
             .AddEventListener('click', () => this.HandleDelete())
             .SetClassName('car-card-delete-icon');
 
@@ -220,7 +170,7 @@ class CarCard extends Card {
             .AppendChild(deleteButton);
 
         contentContainer.AppendChild(leftSide)
-            .AppendChild(rightSide)
+            .AppendChild(this._imageControl)
             .AppendChild(actionsContainer);
 
         this.SetContent(contentContainer);
@@ -240,9 +190,14 @@ class CarCard extends Card {
     }
 
     SaveChanges() {
-        const newName = this._nameInput.GetValue();
+        const newName = this._nameInput.GetValue().trim();
         const newStatus = parseInt(this._statusSelect.GetElement().value);
         const photoChanged = this._car.base64 !== this._car.originalBase64;
+
+        if (!newName) {
+            SystemMessage.ShowMessage('Por favor, insira o nome do carro.', SystemMessage.MessageType.Error);
+            return;
+        }
 
         if (newName !== this._car.name || newStatus !== this._car.status || photoChanged) {
             // Show loading state
@@ -275,7 +230,11 @@ class CarCard extends Card {
                     LoadingScreen.GetInstance().Hide();
                     this._editButton.GetElement().disabled = false;
                     
-                    SystemMessage.ShowMessage('Erro ao atualizar o carro: ' + error.message, SystemMessage.MessageType.Error);
+                    // Restore original base64 on error
+                    this._car.base64 = this._car.originalBase64;
+                    this._imageControl.SetImage(this._car.base64);
+                    
+                    SystemMessage.ShowMessage('Erro ao atualizar o carro.', SystemMessage.MessageType.Error);
                 }
             );
         } else {
@@ -285,12 +244,19 @@ class CarCard extends Card {
     }
 
     ToggleEditMode() {
-        if (this._editMode) {
-            this.SaveChanges();
-        } else {
-            this._editMode = true;
-            this.UpdateEditMode();
+        this._editMode = !this._editMode;
+        
+        if (!this._editMode) {
+            // Restore original values when cancelling edit
+            this._nameInput.SetValue(this._car.name);
+            this._statusSelect.GetElement().value = this._car.status;
+            if (this._car.base64 !== this._car.originalBase64) {
+                this._car.base64 = this._car.originalBase64;
+                this._imageControl.SetImage(this._car.base64);
+            }
         }
+        
+        this.UpdateEditMode();
     }
 
     UpdateEditMode() {
@@ -300,29 +266,32 @@ class CarCard extends Card {
             this._statusElement.SetDisplay(Display.None);
             this._statusSelect.SetDisplay(Display.Block);
             this._editButton.SetDisplay(Display.Block);
-            this._imageUpload
-                .SetStyle('opacity', '1')
-                .SetStyle('pointer-events', 'auto');
-            // Only show remove button in edit mode AND if there's a photo
-            this._removePhotoButton.SetDisplay(this._car.base64 ? Display.Flex : Display.None);
+            this._imageControl.SetEditMode(true);
+            // Set darker background when in edit mode
+            this._editIcon.SetColors(
+                new Color(0, 0, 0, 0.1),  // Default darker in edit mode
+                new Color(0, 0, 0, 0.15),  // Hover
+                new Color(0, 0, 0, 0.2)   // Active
+            );
         } else {
             this._nameElement.SetDisplay(Display.Block);
             this._nameInput.SetDisplay(Display.None);
             this._statusElement.SetDisplay(Display.Block);
             this._statusSelect.SetDisplay(Display.None);
             this._editButton.SetDisplay(Display.None);
-            this._imageUpload
-                .SetStyle('opacity', '0')
-                .SetStyle('pointer-events', 'none');
-            // Always hide remove button in view mode
-            this._removePhotoButton.SetDisplay(Display.None);
+            this._imageControl.SetEditMode(false);
+            // Reset to transparent when not in edit mode
+            this._editIcon.SetColors(
+                new Color(0, 0, 0, 0),    // Default transparent
+                new Color(0, 0, 0, 0.05),  // Hover
+                new Color(0, 0, 0, 0.1)   // Active
+            );
         }
     }
 
     HandleRemovePhoto() {
         this._car.base64 = null;
-        this._imageDisplay.Clear();
-        this._removePhotoButton.SetDisplay(Display.None);
+        this._imageControl.Clear();
     }
 
     HandleDelete() {

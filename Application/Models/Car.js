@@ -81,10 +81,14 @@ class CarModel {
                 .SetData(data)
                 .AddHeader('Authorization', 'Token ' + Account.GetToken())
                 .OnResponse(onSuccess)
-                .OnError(onError)
+                .OnError((error) => {
+                    console.log('Car POST error:', error);
+                    onError(error);
+                })
                 .Send();
 
         } catch (error) {
+            console.log('Car POST catch error:', error);
             onError(error);
         }
     }
@@ -104,10 +108,14 @@ class CarModel {
                 .AddHeader('Authorization', 'Token ' + Account.GetToken())
                 .SetData(data)
                 .OnResponse(onSuccess)
-                .OnError(onError)
+                .OnError((error) => {
+                    console.log('Car PUT error:', error);
+                    onError(error);
+                })
                 .Send();
 
         } catch (error) {
+            console.log('Car PUT catch error:', error);
             onError(error);
         }
     }

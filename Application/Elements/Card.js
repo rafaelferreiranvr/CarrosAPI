@@ -22,7 +22,8 @@ class Card extends IElement {
             .SetBoxShadow(0, 2, 4, 0, new Color(0, 0, 0, 0.1))
             .SetWidth(630)
             .SetHeight(336)
-            .SetStyle('box-sizing', 'border-box');
+            .SetStyle('box-sizing', 'border-box')
+            .SetStyle('zoom', '0.95')
 
         // Content container styles
         this._contentContainer

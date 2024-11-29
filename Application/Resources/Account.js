@@ -10,7 +10,7 @@ class Account {
         this._username = localStorage.getItem('username') || '';
         this._email = localStorage.getItem('email') || '';
     }
-
+    
     static async Login(email, password, onSuccess, onError) {
         Typing.TypeCheck(email, String);
         Typing.TypeCheck(password, String);
@@ -30,6 +30,23 @@ class Account {
         } catch (error) {
             onError(error);
         }
+    }
+
+    static async Logout(onSuccess, onError) {
+        Typing.TypeCheck(onSuccess, Function);
+        Typing.TypeCheck(onError, Function);
+
+        try {
+            const response = await new ClientRequest('/auth/logout/', 'POST')
+                .AddHeader('Authorization', 'Token ' + this.GetToken())
+                .OnResponse(onSuccess)
+                .OnError(onError)
+                .Send();
+
+        } catch (error) {
+            onError(error);
+        }
+
     }
 
     static async Signup(name, email, password, onSuccess, onError) {

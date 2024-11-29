@@ -38,14 +38,19 @@ class PhotoModel {
                         "Base64": base64
                     })
                     .OnResponse(onSuccess)
-                    .OnError(onError)
+                    .OnError((error) => {
+                        console.log('Photo POST error:', error);
+                        onError(error);
+                    })
                     .Send();
             };
             reader.onerror = function() {
+                console.log('FileReader error:', reader.error);
                 onError(reader.error);
             };
             reader.readAsDataURL(file);
         } catch (error) {
+            console.log('Photo POST catch error:', error);
             onError(error);
         }
     }

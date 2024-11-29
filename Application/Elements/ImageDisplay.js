@@ -37,13 +37,39 @@ class ImageDisplay extends IElement {
         this.SetStyle('position', Position.Relative)
             .SetHeightPercent(100)
             .SetWidthPercent(100)
-            .SetStyle('overflow', 'hidden');
+            .SetStyle('overflow', 'hidden')
+            .SetStyle('border-radius', '12px')
+            .SetStyle('box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)')
+            .SetStyle('border', '1px solid rgba(0, 0, 0, 0.1)')
+            .SetStyle('transition', 'box-shadow 0.3s ease');
 
         // Image styles
         const img = this._image.GetElement();
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = 'cover';
+        img.style.borderRadius = '12px';
+        img.style.transition = 'transform 0.3s ease';
+
+        // Add hover effect
+        this.GetElement().addEventListener('mouseenter', () => {
+            this.SetStyle('box-shadow', '0 6px 12px rgba(0, 0, 0, 0.15)');
+            if (this.HasImage()) {
+                img.style.transform = 'scale(1.05)';
+            }
+        });
+
+        this.GetElement().addEventListener('mouseleave', () => {
+            this.SetStyle('box-shadow', '0 4px 6px rgba(0, 0, 0, 0.1)');
+            if (this.HasImage()) {
+                img.style.transform = 'scale(1)';
+            }
+        });
+
+        // Style placeholder
+        this._placeholder
+            .SetStyle('border-radius', '12px')
+            .SetStyle('transition', 'transform 0.3s ease');
     }
 
     Render(base64Image) {
@@ -63,5 +89,10 @@ class ImageDisplay extends IElement {
     Clear() {
         this.Render(null);
         return this;
+    }
+
+    HasImage() {
+        const img = this._image.GetElement();
+        return img.style.display === 'block' && img.src;
     }
 }
