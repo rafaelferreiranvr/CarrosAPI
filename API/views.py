@@ -4,6 +4,7 @@ from .models import Car, Photo
 from .serializers import CarSerializer, PhotoSerializer
 from django.contrib.auth.models import User
 from Auth import authentications
+from functools import partial
 
 class CarViewSet(viewsets.ModelViewSet):
     queryset = Car.objects.all()
@@ -26,6 +27,13 @@ class CarViewSet(viewsets.ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        base64 = request.data.get("Base64")
+        if base64:
+            photo = Photo.objects.create(Base64=base64)
+            serializer.validated_data['Photo'] = photo
+        else:
+            serializer.validated_data['Photo'] = None
+
         serializer.save()
         return Response(status=status.HTTP_201_CREATED)
 
@@ -45,23 +53,46 @@ class CarViewSet(viewsets.ModelViewSet):
         if not request.user.is_authenticated or type(request.user) != User:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
+        if not self.get_serializer(data=request.data).is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             car = Car.objects.get(pk=pk)
         except Car.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = self.get_serializer(car, data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        car.Name = request.data.get("Name")
+        car.Status = request.data.get("Status")
 
-        serializer.save()
+        base64 = request.data.get("Base64")
+        if base64:
+            if car.Photo:
+                car.Photo.Base64 = base64
+                car.Photo.save()
+            else:
+                photo = Photo.objects.create(Base64=base64)
+                car.Photo = photo
+        elif request.data.get("Photo") is None:
+            if car.Photo:
+                car.Photo.delete()
+                car.Photo = None
+        
+        car.save()
+
         return Response(status=status.HTTP_200_OK)
         
     def destroy(self, request, pk=None):
         if not request.user.is_authenticated or type(request.user) != User:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        car = self.get_object()
+        try:
+            car = Car.objects.get(pk=pk)
+        except Car.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if car.Photo:
+            car.Photo.delete()
+
         car.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -79,8 +110,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if(not model.Upload(serializer.validated_data['Extension'], serializer.validated_data['Base64'])):
-            return Response({'error': 'Invalid base64'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
 
         return Response(status=status.HTTP_201_CREATED)
 
@@ -93,7 +123,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
         except Photo.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        return Response(photo.Download(), status=status.HTTP_200_OK)
+        return Response({"Base64": photo.Base64}, status=status.HTTP_200_OK) #" photo.Base64, status=status.HTTP_200_OK)
 
     list = partial_update = destroy = \
         lambda self, request, *args, **kwargs: Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

@@ -12,7 +12,26 @@ class SignupViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
 
     def create(self, request):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        
+        if User.objects.filter(username=username).exists():
+            return Response({'error': 'usernameExists'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        if User.objects.filter(email=email).exists():
+            return Response({'error': 'userEmailExists'}, status=status.HTTP_400_BAD_REQUEST)
+
         response = super().create(request)
+        if response.status_code == status.HTTP_201_CREATED:
+            user = User.objects.get(id=response.data['id'])
+            token, created = models.UserToken.objects.get_or_create(user=user)
+            token.set_expiration_date(timezone.now() + AUTH_TOKEN_LIFETIME)
+            token.save()
+            
+            data = response.data
+            data['token'] = token.key
+            return Response(data, status=status.HTTP_201_CREATED)
+
         return response
     
     list = retrieve = update = partial_update = destroy = \
@@ -25,20 +44,26 @@ class UserLoginApiView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
 
-        if serializer.is_valid():
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
+
+        try:
             user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'userNotFound'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if user:
-                if user.check_password(password):
+        if not user.check_password(password):
+            return Response({'error': 'invalidPassword'}, status=status.HTTP_400_BAD_REQUEST)
 
-                    token, created = self.token_model.objects.get_or_create(user=user)
-                    token.set_expiration_date(timezone.now() + AUTH_TOKEN_LIFETIME)
+        token, created = self.token_model.objects.get_or_create(user=user)
+        token.set_expiration_date(timezone.now() + AUTH_TOKEN_LIFETIME)
 
-                    return Response({'token': token.key}, status=status.HTTP_200_OK)
-
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'token': token.key,
+        }, status=status.HTTP_200_OK)

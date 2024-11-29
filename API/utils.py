@@ -1,9 +1,13 @@
+import base64
+
 def check_base64(base64_string):
     try:
-        base64_string.encode('utf-8')
-    except UnicodeDecodeError:
+        decoded = base64.b64decode(base64_string, validate=True)
+        if base64.b64encode(decoded).decode('utf-8') == base64_string:
+            return True
+    except (ValueError, binascii.Error):
         return False
-    return True
+    return False
 
 def get_mime_type(file_extension):
     mime_types = {

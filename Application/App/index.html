@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cars API Application</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'App/styles.css' %}">
+</head>
+<body>
+    <div id="ViewContainer"></div>
+
+    <!-- Models -->
+    <script src="{% static 'Models/Car.js' %}"></script>
+    <script src="{% static 'Models/Photo.js' %}"></script>
+
+    <!-- Interfaces -->
+    <script src="{% static 'Interfaces/IElement.js' %}"></script>
+    <script src="{% static 'Interfaces/IHoverable.js' %}"></script>
+    <script src="{% static 'Interfaces/IInput.js' %}"></script>
+
+    <!-- Resources -->
+    <script src="{% static 'Resources/LoadingScreen.js' %}"></script>
+    <script src="{% static 'Resources/Typing.js' %}"></script>
+    <script src="{% static 'Resources/Enums.js' %}"></script>
+    <script src="{% static 'Resources/Color.js' %}"></script>
+    <script src="{% static 'Resources/ClientRequest.js' %}"></script>
+    <script src="{% static 'Resources/Account.js' %}"></script>
+    <script src="{% static 'Resources/SystemMessage.js' %}"></script>
+
+    <!-- Elements -->
+    <script src="{% static 'Elements/InputField.js' %}"></script>
+    <script src="{% static 'Elements/InputForm.js' %}"></script>
+    <script src="{% static 'Elements/Button.js' %}"></script>
+    <script src="{% static 'Elements/Link.js' %}"></script>
+    <script src="{% static 'Elements/Panel.js' %}"></script>
+    <script src="{% static 'Elements/Title.js' %}"></script>
+    <script src="{% static 'Elements/Loading.js' %}"></script>
+    <script src="{% static 'Elements/SubmitPanel.js' %}"></script>
+    <script src="{% static 'Elements/PopupDialog.js' %}"></script>
+    <script src="{% static 'Elements/Card.js' %}"></script>
+    <script src="{% static 'Elements/ImageUpload.js' %}"></script>
+    <script src="{% static 'Elements/ImageDisplay.js' %}"></script>
+
+    <!-- Components -->
+    <script src="{% static 'Components/LoginPanel.js' %}"></script>
+    <script src="{% static 'Components/SignupPanel.js' %}"></script>
+    <script src="{% static 'Components/CarCard.js' %}"></script>
+    <script src="{% static 'Components/AddCarCard.js' %}"></script>
+
+    <!-- Views -->
+    <script src="{% static 'Views/Login.js' %}"></script>
+    <script src="{% static 'Views/Signup.js' %}"></script>
+    <script src="{% static 'Views/Dashboard.js' %}"></script>
+
+    <!-- App -->
+    <script src="{% static 'App/main.js' %}"></script>
+    <script>
+        // Initialize app after all scripts are loaded
+        window.addEventListener('load', () => {
+            window.app = new App();
+        });
+    </script>
+</body>
+</html>
