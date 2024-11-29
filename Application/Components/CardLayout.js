@@ -44,32 +44,32 @@ class CardLayout extends IElement {
         if (width <= 768) {
             // Mobile: dynamic scale based on screen width
             scale = (width * 0.85) / cardWidth;
-            this.SetStyle('gridTemplateColumns', `${cardWidth * scale}px`);
+            this.SetStyle('gridTemplateColumns', '1fr');
         } 
         else if (width <= 1024) {
             // Transition from mobile to tablet
             scale = this.CalculateScale(width, 0.55, 0.65, 768, 1024);
-            this.SetStyle('gridTemplateColumns', `repeat(2, ${cardWidth * scale}px)`);
+            this.SetStyle('gridTemplateColumns', 'repeat(2, auto)');
         }
         else if (width <= 1300) {
             // Transition from tablet to desktop
             scale = this.CalculateScale(width, 0.65, 0.85, 1024, 1300);
-            this.SetStyle('gridTemplateColumns', `repeat(2, ${cardWidth * scale}px)`);
+            this.SetStyle('gridTemplateColumns', 'repeat(2, auto)');
         }
         else if (width <= 1600) {
             // Transition from desktop to large desktop
             scale = this.CalculateScale(width, 0.85, 0.95, 1300, 1600);
-            this.SetStyle('gridTemplateColumns', `repeat(2, ${cardWidth * scale}px)`);
+            this.SetStyle('gridTemplateColumns', 'repeat(2, auto)');
         }
         else if (width <= 1900) {
             // Large desktop
             scale = 0.95;
-            this.SetStyle('gridTemplateColumns', `repeat(2, ${cardWidth * scale}px)`);
+            this.SetStyle('gridTemplateColumns', 'repeat(2, auto)');
         }
         else {
             // Extra large desktop - 3 columns
             scale = 0.95;
-            this.SetStyle('gridTemplateColumns', `repeat(3, ${cardWidth * scale}px)`);
+            this.SetStyle('gridTemplateColumns', 'repeat(3, auto)');
         }
 
         this.SetStyle('gap', '20px');
