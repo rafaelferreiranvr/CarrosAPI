@@ -20,6 +20,52 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
      docker-compose down
      ```
 
+### Endpoints de Autenticação
+
+#### Signup (Criar Conta)
+- **URL**: `/auth/signup/`
+- **Método**: POST
+- **Solicitação**:
+```json
+{
+    "username": "seu_usuario",
+    "email": "seu_email@exemplo.com",
+    "password": "sua_senha"
+}
+```
+- **Códigos de Resposta**:
+  - `201 Created`: Conta criada com sucesso
+  - `400 Bad Request`: Dados inválidos
+
+#### Login
+- **URL**: `/auth/login/`
+- **Método**: POST
+- **Solicitação**:
+```json
+{
+    "username": "seu_usuario",
+    "password": "sua_senha"
+}
+```
+- **Resposta de Sucesso** (200 OK):
+```json
+{
+    "token": "seu_token_de_autenticacao"
+}
+```
+- **Códigos de Resposta**:
+  - `200 OK`: Login bem-sucedido
+  - `400 Bad Request`: Credenciais inválidas
+  - `401 Unauthorized`: Autenticação falhou
+
+#### Logout
+- **URL**: `/auth/logout/`
+- **Método**: POST
+- **Autenticação**: Requerida
+- **Códigos de Resposta**:
+  - `200 OK`: Logout bem-sucedido
+  - `401 Unauthorized`: Token inválido ou expirado
+
 ### Autenticação
 
 A API utiliza autenticação baseada em token. Para acessar os endpoints protegidos, inclua o token no cabeçalho da requisição:
@@ -50,28 +96,28 @@ Authorization: Token <seu-token>
 - **URL**: `/api/car/`
 - **Método**: GET
 - **Autenticação**: Requerida
-- **Solicitação**: Nenhum corpo necessário.
 - **Resposta de Sucesso** (200 OK):
 ```json
 [
     {
-        "id": 1,
-        "Nome": "Nome do Carro",
+        "id": 24,
+        "Name": "Fusca Vermelho",
         "Status": 1,
-        "Foto": {
-            "id": 1,
-            "Extensão": "jpg",
-            "Base64": "string_base64_da_imagem"
-        }
+        "Photo": 20,
+        "Base64": "string_base64_da_imagem"
     },
     {
-        "id": 2,
-        "Nome": "Outro Carro",
-        "Status": 0,
-        "Foto": null
+        "id": 23,
+        "Name": "HB20",
+        "Status": 1,
+        "Photo": 29,
+        "Base64": "string_base64_da_imagem"
     }
 ]
 ```
+- **Códigos de Resposta**:
+  - `200 OK`: Sucesso
+  - `401 Unauthorized`: Não autenticado
 
 ##### Criar Carro
 - **URL**: `/api/car/`
@@ -80,34 +126,41 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
-    "Nome": "Nome do Carro",
+    "Name": "HB20S",
     "Status": 1,
-    "Foto": {
-        "Extensão": "jpg",
-        "Base64": "string_base64_da_imagem"
-    }
+    "Base64": "data:image/jpeg;base64,..."
 }
 ```
-- **Resposta de Sucesso** (201 Created)
+ou
+```json
+{
+    "Name": "HB20S",
+    "Status": 1
+}
+```
+- **Códigos de Resposta**:
+  - `201 Created`: Carro criado com sucesso
+  - `400 Bad Request`: Dados inválidos
+  - `401 Unauthorized`: Não autenticado
 
 ##### Detalhes do Carro
 - **URL**: `/api/car/{id}/`
 - **Método**: GET
 - **Autenticação**: Requerida
-- **Solicitação**: Nenhum corpo necessário.
 - **Resposta de Sucesso** (200 OK):
 ```json
 {
-    "id": 1,
-    "Nome": "Nome do Carro",
+    "id": 24,
+    "Name": "Fusca Vermelho",
     "Status": 1,
-    "Foto": {
-        "id": 1,
-        "Extensão": "jpg",
-        "Base64": "string_base64_da_imagem"
-    }
+    "Photo": 20,
+    "Base64": "string_base64_da_imagem"
 }
 ```
+- **Códigos de Resposta**:
+  - `200 OK`: Sucesso
+  - `401 Unauthorized`: Não autenticado
+  - `404 Not Found`: Carro não encontrado
 
 ##### Atualizar Carro
 - **URL**: `/api/car/{id}/`
@@ -116,36 +169,82 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
-    "Nome": "Nome Atualizado",
-    "Status": 0,
-    "Foto": {
-        "Extensão": "png",
-        "Base64": "novo_string_base64_da_imagem"
-    }
+    "Name": "HB20S",
+    "Status": 1,
+    "Base64": "data:image/jpeg;base64,..."
 }
 ```
-- **Resposta de Sucesso** (200 OK):
+ou
 ```json
 {
-    "id": 1,
-    "Nome": "Nome Atualizado",
-    "Status": 0,
-    "Foto": {
-        "id": 1,
-        "Extensão": "png",
-        "Base64": "novo_string_base64_da_imagem"
-    }
+    "Name": "HB20S",
+    "Status": 1
 }
 ```
+- **Códigos de Resposta**:
+  - `200 OK`: Atualização bem-sucedida
+  - `400 Bad Request`: Dados inválidos
+  - `401 Unauthorized`: Não autenticado
+  - `404 Not Found`: Carro não encontrado
 
 ##### Excluir Carro
 - **URL**: `/api/car/{id}/`
 - **Método**: DELETE
 - **Autenticação**: Requerida
-- **Solicitação**: Nenhum corpo necessário.
-- **Resposta de Sucesso** (204 No Content)
+- **Códigos de Resposta**:
+  - `200 OK`: Exclusão bem-sucedida
+  - `401 Unauthorized`: Não autenticado
+  - `404 Not Found`: Carro não encontrado
+  - `405 Method Not Allowed`: Método não permitido
 
 #### Fotos
+
+##### Listar Fotos
+- **URL**: `/api/photo/`
+- **Método**: GET
+- **Autenticação**: Requerida
+- **Resposta de Sucesso** (200 OK):
+```json
+[
+    {
+        "id": 19,
+        "Base64": "string_base64_da_imagem"
+    },
+    {
+        "id": 20,
+        "Base64": "string_base64_da_imagem"
+    }
+]
+```
+- **Códigos de Resposta**:
+  - `200 OK`: Sucesso
+  - `401 Unauthorized`: Não autenticado
+
+##### Detalhes da Foto
+- **URL**: `/api/photo/{id}`
+- **Método**: GET
+- **Autenticação**: Requerida
+- **Resposta de Sucesso** (200 OK):
+```json
+{
+    "id": 19,
+    "Base64": "string_base64_da_imagem"
+}
+```
+- **Códigos de Resposta**:
+  - `200 OK`: Sucesso
+  - `401 Unauthorized`: Não autenticado
+  - `404 Not Found`: Foto não encontrada
+
+##### Obter Arquivo de Imagem
+- **URL**: `/api/photo/file/{id}`
+- **Método**: GET
+- **Autenticação**: Requerida
+- **Resposta**: Arquivo de Imagem
+- **Códigos de Resposta**:
+  - `200 OK`: Sucesso
+  - `401 Unauthorized`: Não autenticado
+  - `404 Not Found`: Foto não encontrada
 
 ##### Upload de Foto
 - **URL**: `/api/photo/`
@@ -154,11 +253,13 @@ Authorization: Token <seu-token>
 - **Solicitação**:
 ```json
 {
-    "Extensão": "jpg",
     "Base64": "string_base64_da_imagem"
 }
 ```
-- **Resposta de Sucesso** (201 Created)
+- **Códigos de Resposta**:
+  - `201 Created`: Foto criada com sucesso
+  - `400 Bad Request`: Dados inválidos
+  - `401 Unauthorized`: Não autenticado
 
 ### API GraphQL
 
