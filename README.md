@@ -37,6 +37,7 @@ Authorization: Token <seu-token>
 #### Signup (Criar Conta)
 - **URL**: `/auth/signup/`
 - **Método**: POST
+- **Autenticação**: Não
 - **Solicitação**:
 ```json
 {
@@ -59,6 +60,7 @@ Authorization: Token <seu-token>
 #### Login
 - **URL**: `/auth/login/`
 - **Método**: POST
+- **Autenticação**: Não
 - **Solicitação**:
 ```json
 {
@@ -77,7 +79,6 @@ Authorization: Token <seu-token>
   - `400 Bad Request`: Dados inválidos
     - Usuário não encontrado: `{"error": "userNotFound"}`
     - Senha inválida: `{"error": "invalidPassword"}`
-  - `401 Unauthorized`: Autenticação falhou
 
 #### Logout
 - **URL**: `/auth/logout/`
