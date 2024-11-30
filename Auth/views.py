@@ -24,7 +24,29 @@ class SignupViewSet(viewsets.ModelViewSet):
         if User.objects.filter(email=email).exists():
             return Response({'error': 'userEmailExists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        response = super().create(request)
+        try:
+            response = super().create(request)
+        except Exception as e:
+
+            error_dict = e.args[0] if e.args else {}
+
+            if 'username' in error_dict:
+                errors = error_dict['username']
+                if any(getattr(error, 'code', '') == 'invalid' for error in errors):
+                    return Response({'error': 'invalidUsername'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if 'email' in error_dict:
+                errors = error_dict['email']
+                if any(getattr(error, 'code', '') == 'invalid' for error in errors):
+                    return Response({'error': 'invalidEmail'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if 'password' in error_dict:
+                errors = error_dict['password']
+                if any(getattr(error, 'code', '') == 'invalid' for error in errors):
+                    return Response({'error': 'invalidPassword'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            return Response({'error': 'unknownError'}, status=status.HTTP_400_BAD_REQUEST)
+
         if response.status_code == status.HTTP_201_CREATED:
             user = User.objects.get(id=response.data['id'])
             token, created = models.UserToken.objects.get_or_create(user=user)

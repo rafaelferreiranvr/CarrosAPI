@@ -60,6 +60,18 @@ class SignupView extends IElement {
 
                         this._signupPanel.GetEmailInput().ShowError('Este email já está em uso');
                     
+                    } else if (errorData.error === 'invalidUsername') {
+
+                        this._signupPanel.GetNameInput().ShowError('O nome de usuário pode conter apenas letras, números e @/./+/-/_');
+                    
+                    } else if (errorData.error === 'invalidEmail') {
+
+                        this._signupPanel.GetEmailInput().ShowError('Email inválido');
+                    
+                    } else if (errorData.error === 'invalidPassword') {
+
+                        this._signupPanel.GetPasswordInput().ShowError('Senha inválida');
+                    
                     } else {
                         console.error('Signup error details:', error);
                         this._signupPanel.GetEmailInput().ShowError('Ocorreu um erro durante o cadastro');

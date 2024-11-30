@@ -31,6 +31,7 @@ class SignupPanel extends SubmitPanel {
             .SetPlaceholder('Nome')
             .SetRequired(true)
             .SetMinLength(3)
+            .SetPattern('^[a-zA-Z0-9@./+/-/_]*$')
             .SetRequiredErrorText('Por favor, digite seu nome');
 
         this._emailInput = new InputField()

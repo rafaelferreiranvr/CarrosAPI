@@ -12,9 +12,9 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
 
 2. **Acessar a Aplicação**:
 
-   - O Aplicativo estará disponível em `http://localhost:8000/`.
-   - A API de Autenticação estará disponível em `http://localhost:8000/auth/`.
-   - A API Geral estará disponível em `http://localhost:8000/api/`.
+   - O Aplicativo estará disponível em `http://localhost:3000/`.
+   - A API de Autenticação estará disponível em `http://localhost:3000/auth/`.
+   - A API Geral estará disponível em `http://localhost:3000/api/`.
 
 3. **Parar os Containers**:
    - Para parar os containers em execução, utilize o comando:
@@ -22,7 +22,7 @@ Para realizar o deploy da aplicação CarrosAPI utilizando Docker, siga os passo
      docker-compose down
 
 ### Aplicativo
-O aplicativo fornece uma interface web que auxilia na testagem das APIs, autenticação e exibição de imagens. Disponível em `http://localhost:8000/`.
+O aplicativo fornece uma interface web que auxilia na testagem das APIs, autenticação e exibição de imagens. Disponível em `http://localhost:3000/`.
 
 ### Autenticação
 
@@ -50,6 +50,10 @@ Authorization: Token <seu-token>
   - `400 Bad Request`: Dados inválidos
     - Usuário já existe: `{"error": "usernameExists"}`
     - Email já existe: `{"error": "userEmailExists"}`
+    - Nome de usuário inválido: `{"error": "invalidUsername"}`
+    - Email inválido: `{"error": "invalidEmail"}`
+    - Senha inválida: `{"error": "invalidPassword"}`
+    - Erro desconhecido: `{"error": "unknownError"}`
   - `401 Unauthorized`: Autenticação falhou
 
 #### Login

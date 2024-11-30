@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8000",
+      "url": "http://localhost:3000",
       "description": "Servidor de desenvolvimento"
     }
   ],
@@ -100,7 +100,7 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string"
+                      "type": "integer"
                     },
                     "username": {
                       "type": "string"
@@ -117,7 +117,7 @@
             }
           },
           "400": {
-            "description": "Erro de validação",
+            "description": "Erro na validação dos dados",
             "content": {
               "application/json": {
                 "schema": {
@@ -125,7 +125,15 @@
                   "properties": {
                     "error": {
                       "type": "string",
-                      "enum": ["usernameExists", "userEmailExists"]
+                      "enum": [
+                        "usernameExists",
+                        "userEmailExists", 
+                        "invalidUsername",
+                        "invalidEmail",
+                        "invalidPassword",
+                        "unknownError"
+                      ],
+                      "description": "Código do erro. 'usernameExists': nome de usuário já existe, 'userEmailExists': email já cadastrado, 'invalidUsername': nome de usuário contém caracteres inválidos, 'invalidEmail': formato de email inválido, 'invalidPassword': senha não atende aos requisitos"
                     }
                   }
                 }
