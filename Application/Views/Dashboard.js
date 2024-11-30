@@ -116,6 +116,9 @@ class DashboardView extends IElement {
                     );
                     this._cardsContainer.AppendChild(card);
                 });
+
+                this._cardsContainer.UpdateLayout();
+
             },
             // onError
             (error) => {
