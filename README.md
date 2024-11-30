@@ -55,7 +55,6 @@ Authorization: Token <seu-token>
     - Email inválido: `{"error": "invalidEmail"}`
     - Senha inválida: `{"error": "invalidPassword"}`
     - Erro desconhecido: `{"error": "unknownError"}`
-  - `401 Unauthorized`: Autenticação falhou
 
 #### Login
 - **URL**: `/auth/login/`
