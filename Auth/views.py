@@ -74,7 +74,6 @@ class UserLoginApiView(APIView):
 class UserLogoutApiView(APIView):
     token_model = models.UserToken
     authentication_classes = [authentications.UserTokenAuthentication,]
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         if not request.user.is_authenticated or type(request.user) != User:

@@ -13,16 +13,27 @@ import json
 
 class AuthenticatedGraphQLView(GraphQLView):
     def parse_body(self, request):
-        if isinstance(request.body, bytes):
-            return json.loads(request.body.decode("utf-8"))
-        return request.body
+        try:
+            if isinstance(request.body, bytes):
+                return json.loads(request.body.decode("utf-8"))
+            return request.body
+        except json.JSONDecodeError:
+            return {}
 
     def dispatch(self, request, *args, **kwargs):
         auth = UserTokenAuthentication()
         try:
             user_auth = auth.authenticate(request)
-            if user_auth:
-                request.user = user_auth[0]
+            if user_auth is None:
+                return JsonResponse({
+                    'errors': [{
+                        'message': 'Authentication required',
+                        'locations': None,
+                        'path': None
+                    }]
+                }, status=401)
+            
+            request.user = user_auth[0]
             return super().dispatch(request, *args, **kwargs)
         except Exception as e:
             return JsonResponse({
